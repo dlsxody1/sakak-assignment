@@ -10,7 +10,10 @@ case "$subject" in
   Merge*|Revert*) exit 0 ;;
 esac
 
-pattern='^(feat|fix|refactor|test|docs|style|chore)(\([a-z-]+\))?: .{1,50}$'
+pattern='^(feat|fix|refactor|test|docs|style|chore)(\([a-z-]+\))?: .+$'
+
+# 길이는 grep과 별도로 센다. 로케일에 따라 grep이 한글을 바이트로 세기 때문이다.
+length=$(printf '%s' "$subject" | LC_ALL=en_US.UTF-8 wc -m | tr -d ' ')
 
 if ! printf '%s' "$subject" | grep -qE "$pattern"; then
   cat >&2 <<EOF
@@ -18,12 +21,17 @@ if ! printf '%s' "$subject" | grep -qE "$pattern"; then
 
   입력: $subject
 
-  형식: <type>(<scope>): <제목 50자 이내>
+  형식: <type>(<scope>): <제목 60자 이내>
   type: feat fix refactor test docs style chore
 
   예시: feat(health-reference): 참조범위 문자열 파서 추가
         fix(checkup): 2차 요청에 multiFactorInfo 누락 수정
 EOF
+  exit 1
+fi
+
+if [ "$length" -gt 60 ]; then
+  echo "✖ 제목이 ${length}자다. 60자 이내로 줄여라: $subject" >&2
   exit 1
 fi
 
