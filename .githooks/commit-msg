@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# 커밋 메시지가 `type(scope): 설명` 형식인지 검사한다.
+# 활성화: git config core.hooksPath .githooks
+set -eu
+
+subject=$(grep -vE '^\s*#' "$1" | grep -vE '^\s*$' | head -1)
+
+# merge·revert 커밋은 git이 생성하므로 통과시킨다.
+case "$subject" in
+  Merge*|Revert*) exit 0 ;;
+esac
+
+pattern='^(feat|fix|refactor|test|docs|style|chore)(\([a-z-]+\))?: .{1,50}$'
+
+if ! printf '%s' "$subject" | grep -qE "$pattern"; then
+  cat >&2 <<EOF
+✖ 커밋 메시지 형식이 맞지 않다.
+
+  입력: $subject
+
+  형식: <type>(<scope>): <제목 50자 이내>
+  type: feat fix refactor test docs style chore
+
+  예시: feat(health-reference): 참조범위 문자열 파서 추가
+        fix(checkup): 2차 요청에 multiFactorInfo 누락 수정
+EOF
+  exit 1
+fi
+
+# 마침표로 끝나면 명사형이 아닐 가능성이 높다.
+if printf '%s' "$subject" | grep -qE '\.$'; then
+  echo "✖ 제목은 마침표 없이 명사형으로 끝낸다: $subject" >&2
+  exit 1
+fi

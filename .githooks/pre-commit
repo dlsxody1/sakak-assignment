@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# 스테이징에 dashboard 변경이 있으면 FSD 경계 테스트를 돌린다.
+# 경계 위반이 커밋에 섞여 들어가는 것을 막는 용도다.
+set -eu
+
+if git diff --cached --name-only | grep -q '^dashboard/src/'; then
+  echo "▸ FSD 경계 검사"
+  ( cd dashboard && pnpm vitest run src/shared/config/fsd-boundaries.test.ts --silent )
+fi
