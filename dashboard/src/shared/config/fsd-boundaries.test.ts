@@ -17,9 +17,14 @@ function collectSourceFiles(dir: string): string[] {
   })
 }
 
-/** `import ... from '@/...'` 의 경로만 뽑는다. 상대경로는 슬라이스 내부라 검사 대상이 아니다. */
+/**
+ * `import ... from '@/...'` 의 경로만 뽑는다. 상대경로는 슬라이스 내부라 검사 대상이 아니다.
+ *
+ * 따옴표 두 종류를 모두 본다. 이 레포엔 포매터가 없어서 작은따옴표만 매칭하면
+ * 큰따옴표로 쓴 import가 경계 검사를 통째로 빠져나간다.
+ */
 function collectAliasImports(source: string): string[] {
-  return [...source.matchAll(/from\s+'(@\/[^']+)'/g)].map((m) => m[1])
+  return [...source.matchAll(/from\s+['"](@\/[^'"]+)['"]/g)].map((m) => m[1])
 }
 
 interface Location {
