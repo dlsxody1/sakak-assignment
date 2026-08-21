@@ -39,12 +39,25 @@ function locate(segments: string[]): Location | undefined {
   return { layer: layer as Layer, slice }
 }
 
-const files = collectSourceFiles(SRC).map((path) => ({
-  path,
-  rel: relative(SRC, path),
-  location: locate(relative(SRC, path).split(sep)),
-  imports: collectAliasImports(readFileSync(path, 'utf8')),
-}))
+const files = collectSourceFiles(SRC).map((path) => {
+  const source = readFileSync(path, 'utf8')
+  const rel = relative(SRC, path)
+  return {
+    path,
+    rel,
+    /** 경로 구분자를 '/'로 통일한다. 세그먼트 판별이 OS에 좌우되면 안 된다. */
+    posix: rel.split(sep).join('/'),
+    location: locate(rel.split(sep)),
+    imports: collectAliasImports(source),
+    source,
+  }
+})
+
+/** 테스트 파일은 규약 검사에서 제외한다. 훅을 부르는 게 일이다. */
+const isTest = (posix: string) => /\.test\.tsx?$/.test(posix)
+
+/** `entities/checkup/ui/Card.tsx` 처럼 세그먼트가 경로에 들어있는지 */
+const inSegment = (posix: string, segment: string) => posix.includes(`/${segment}/`)
 
 describe('FSD 레이어 경계', () => {
   it('src 하위 최상위 디렉터리는 FSD 레이어 이름만 사용한다', () => {
@@ -115,6 +128,70 @@ describe('FSD 레이어 경계', () => {
         imports
           .filter((spec) => !spec.startsWith('@/shared/'))
           .map((spec) => `${rel} → ${spec}`),
+      )
+
+    expect(violations, violations.join('\n')).toEqual([])
+  })
+})
+
+describe('세그먼트 규약', () => {
+  // 레이어가 '어느 디렉터리에 두나'라면, 여기는 '그 안에서 어떻게 쓰나'다.
+  // FSD 자체는 후자를 정해주지 않으므로 우리가 정하고 여기서 강제한다.
+
+  it('ui는 상태·부수효과 훅을 직접 호출하지 않는다', () => {
+    // 로직은 model의 훅에 있고 ui는 계산된 값만 받는다.
+    //
+    // useState는 일부러 뺐다. 애니메이션·hover 같은 순수 DOM 상태는 허용이고
+    // 비즈니스 상태는 금지인데, 정규식으로 그 둘을 구분할 수 없다.
+    // 못 잡는 걸 잡는 척하느니 CLAUDE.md 규칙으로 두고 리뷰에서 본다.
+    const banned = /\buse(Effect|LayoutEffect|Query|Mutation|Reducer|Context)\s*\(/g
+
+    const violations = files
+      .filter(({ posix }) => inSegment(posix, 'ui') && !isTest(posix))
+      .flatMap(({ rel, source }) =>
+        [...source.matchAll(banned)].map(
+          (m) => `${rel} → ${m[0].replace(/\s*\($/, '')} (model의 훅으로 옮길 것)`,
+        ),
+      )
+
+    expect(violations, violations.join('\n')).toEqual([])
+  })
+
+  it('ui는 fetch를 직접 호출하지 않는다', () => {
+    // 통신은 api 세그먼트의 경계를 지난다.
+    const violations = files
+      .filter(({ posix }) => inSegment(posix, 'ui') && !isTest(posix))
+      .filter(({ source }) => /\bfetch\s*\(/.test(source))
+      .map(({ rel }) => `${rel} → fetch (api 세그먼트로 옮길 것)`)
+
+    expect(violations, violations.join('\n')).toEqual([])
+  })
+
+  it('lib은 React를 import하지 않는다', () => {
+    // 순수 함수는 렌더링 없이 입출력만으로 테스트된다.
+    // 훅이 필요해졌다면 그건 lib이 아니라 model의 코드다.
+    const violations = files
+      .filter(({ posix }) => inSegment(posix, 'lib') && !isTest(posix))
+      .filter(({ source }) => /from\s+['"]react['"]/.test(source))
+      .map(({ rel }) => `${rel} → react (순수 함수여야 한다, 훅은 model로)`)
+
+    expect(violations, violations.join('\n')).toEqual([])
+  })
+
+  it('도메인 콜백을 props로 내려주지 않는다', () => {
+    // onUpdate 같은 콜백은 "언제 불리는지"가 부모에 숨는다. 시그니처만으로는
+    // 동작을 알 수 없고, 매 렌더마다 새 함수라 참조 동등성도 깨진다.
+    // 핸들러가 필요한 컴포넌트가 model의 훅에서 직접 받는다.
+    //
+    // shared/ui의 프리미티브(<Button onClick>)는 DOM 이벤트 위임이라 예외다.
+    const callbackProp = /\bon[A-Z]\w*\??\s*:\s*\([^)]*\)\s*=>/g
+
+    const violations = files
+      .filter(({ posix }) => !posix.startsWith('shared/ui/') && !isTest(posix))
+      .flatMap(({ rel, source }) =>
+        [...source.matchAll(callbackProp)].map(
+          (m) => `${rel} → ${m[0].split(':')[0].trim()} (model의 훅에서 직접 받을 것)`,
+        ),
       )
 
     expect(violations, violations.join('\n')).toEqual([])
