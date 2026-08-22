@@ -1,0 +1,72 @@
+import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
+
+import { useSession } from '@/entities/user'
+import { requestAuth } from '../api/request-checkup'
+import { buildInquiryBody } from '../lib/build-body'
+import { validateInquiry, type InquiryErrors } from '../lib/validate-form'
+import { useInquiry } from './inquiry-store'
+import type { InquiryForm } from './types'
+
+const THIS_YEAR = String(new Date().getFullYear())
+
+/** 통신사는 기본값을 두지 않는다 — 두면 SKT가 조용히 선택된다. */
+const EMPTY: InquiryForm = {
+  legalName: '',
+  birthdate: '',
+  phoneNo: '',
+  telecom: '',
+  startDate: '2015',
+  endDate: THIS_YEAR,
+}
+
+/**
+ * 인증 폼. 필드 상태와 1차 요청을 함께 갖는다.
+ *
+ * 성별은 폼 로컬 상태가 아니라 `entities/user` 세션에 바로 쓴다.
+ * 판정이 쓰는 값이고 인증이 끝나도 남아야 해서, 임시 복사본을 두면
+ * 두 곳이 어긋난다.
+ */
+export function useInquiryForm() {
+  const [form, setForm] = useState(EMPTY)
+  const [errors, setErrors] = useState<InquiryErrors>({})
+  const sex = useSession((state) => state.sex)
+  const setSex = useSession((state) => state.setSex)
+  const startWaiting = useInquiry((state) => state.startWaiting)
+  const fail = useInquiry((state) => state.fail)
+  const error = useInquiry((state) => state.error)
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const body = buildInquiryBody(form, crypto.randomUUID())
+      const response = await requestAuth(body)
+      return { body, multiFactorInfo: response.data }
+    },
+    onSuccess: ({ body, multiFactorInfo }) => startWaiting(body, multiFactorInfo),
+    onError: (cause: Error) => fail(cause.message),
+  })
+
+  const setField = (key: keyof InquiryForm, value: string) => {
+    setForm((current) => ({ ...current, [key]: value }))
+    // 고치는 중에 빨간 글씨를 그대로 두면 이미 고친 것도 틀린 것처럼 보인다.
+    setErrors((current) => ({ ...current, [key]: undefined }))
+  }
+
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault()
+    const found = validateInquiry({ ...form, sex })
+    setErrors(found)
+    if (Object.keys(found).length === 0) mutation.mutate()
+  }
+
+  return {
+    form,
+    errors,
+    setField,
+    sex,
+    setSex,
+    submit,
+    isSubmitting: mutation.isPending,
+    error,
+  }
+}
