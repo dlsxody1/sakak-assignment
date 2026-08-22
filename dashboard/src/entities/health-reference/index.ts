@@ -1,2 +1,5 @@
 export type { Judgement, ReferenceValues, Sex } from './model/types'
 export { judge } from './lib/judge'
+export type { JudgementDisplay } from './ui/judgement-display'
+export { JUDGEMENT_DISPLAY, JUDGEMENT_ORDER } from './ui/judgement-display'
+export { JudgementBadge } from './ui/JudgementBadge'

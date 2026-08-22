@@ -1,1 +1,63 @@
 @import 'tailwindcss';
+
+/*
+  판정 5-state 색.
+
+  건강 데이터라 색만으로 판정을 전달하지 않는다 — 각 상태는 색 + 텍스트 라벨 + 형태로
+  중복 부호화한다. 적록색맹 사용자가 정상과 위험을 구분 못 하면 치명적이고, 그래서
+  suspect를 순수 빨강이 아니라 주황 쪽으로 당겨 normalA(청록 계열 초록)와 명도까지
+  벌려 뒀다. 흑백으로 출력해도 명도 차이로 읽힌다.
+
+  unmeasured(측정 안 함)와 undetermined(판정 못 함)는 둘 다 회색 계열이지만
+  채도를 다르게 준다. 정상으로 오해되면 안 되므로 초록·주황과는 확실히 멀다.
+*/
+@theme {
+  --color-normal-a: oklch(0.55 0.13 165);
+  --color-normal-a-soft: oklch(0.96 0.03 165);
+  --color-normal-b: oklch(0.62 0.13 95);
+  --color-normal-b-soft: oklch(0.97 0.04 95);
+  --color-suspect: oklch(0.55 0.19 35);
+  --color-suspect-soft: oklch(0.96 0.04 35);
+  --color-unmeasured: oklch(0.62 0.02 260);
+  --color-unmeasured-soft: oklch(0.97 0.005 260);
+  --color-undetermined: oklch(0.55 0.06 285);
+  --color-undetermined-soft: oklch(0.97 0.02 285);
+
+  --font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+/*
+  수치는 표에서 자릿수가 맞아야 비교가 된다. 검진값은 전부 이 클래스를 쓴다.
+*/
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* 브라우저 기본값도 팔레트에서 가져온다. */
+::selection {
+  background-color: oklch(0.88 0.06 165);
+  color: oklch(0.25 0.02 260);
+}
+
+:root {
+  accent-color: var(--color-normal-a);
+  scrollbar-color: oklch(0.82 0.01 260) transparent;
+}
+
+/* 키보드 탐색에만 링을 준다. 마우스 클릭에는 나타나지 않는다. */
+:focus-visible {
+  outline: 2px solid var(--color-normal-a);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
