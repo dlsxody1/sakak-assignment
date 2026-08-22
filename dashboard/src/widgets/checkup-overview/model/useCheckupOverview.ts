@@ -26,6 +26,7 @@ export function useCheckupOverview() {
     return {
       patientName: history.patientName,
       latestDate: latest?.date ?? '',
+      sex,
       evaluation: latest?.evaluation ?? '',
       measurements,
       distribution: countByJudgement(measurements, JUDGEMENT_ORDER),

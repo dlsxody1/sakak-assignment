@@ -84,6 +84,11 @@ export interface CheckupVisit {
 
 export interface CheckupHistory {
   patientName: string
+  /**
+   * fixture에서 왔는지. 인증 없이 열었을 때 예시를 실제처럼 보여주지 않으려면
+   * 화면이 출처를 알아야 한다.
+   */
+  isSample: boolean
   /** 오래된 순 — 차트가 이 순서를 그대로 쓴다. */
   checkups: Checkup[]
   /** 최신 순 — 이력 목록이 이 순서를 그대로 쓴다. */
