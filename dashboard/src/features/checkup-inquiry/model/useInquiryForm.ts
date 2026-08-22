@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 
-import { useSession } from '@/entities/user'
+import { useSession, type Sex } from '@/entities/user'
 import { requestAuth } from '../api/request-checkup'
 import { buildInquiryBody } from '../lib/build-body'
 import { validateInquiry, type InquiryErrors } from '../lib/validate-form'
@@ -30,8 +30,19 @@ const EMPTY: InquiryForm = {
 export function useInquiryForm() {
   const [form, setForm] = useState(EMPTY)
   const [errors, setErrors] = useState<InquiryErrors>({})
-  const sex = useSession((state) => state.sex)
-  const setSex = useSession((state) => state.setSex)
+  const sessionSex = useSession((state) => state.sex)
+  const setSessionSex = useSession((state) => state.setSex)
+  // 세션의 성별은 대시보드가 판정에 쓰느라 항상 값이 있다(기본 남성).
+  // 폼에는 "아직 안 고름"이 있어야 해서 선택 여부를 따로 센다 —
+  // 안 그러면 남성이 조용히 선택된 채 제출되고 검증이 영영 안 걸린다.
+  const [hasChosenSex, setHasChosenSex] = useState(false)
+  const sex = hasChosenSex ? sessionSex : ''
+
+  const setSex = (next: Sex) => {
+    setSessionSex(next)
+    setHasChosenSex(true)
+    setErrors((current) => ({ ...current, sex: undefined }))
+  }
   const startWaiting = useInquiry((state) => state.startWaiting)
   const fail = useInquiry((state) => state.fail)
   const error = useInquiry((state) => state.error)

@@ -7,7 +7,7 @@ import { CheckupOverview } from '@/widgets/checkup-overview'
  */
 export function DashboardPage() {
   return (
-    <div className="mx-auto flex max-w-6xl flex-col px-4 py-4 sm:px-6 lg:h-full lg:py-6">
+    <div className="mx-auto flex max-w-6xl flex-col px-4 py-4 sm:px-6 lg:h-dvh lg:overflow-hidden lg:py-6">
       <header className="mb-4 shrink-0">
         <h1 className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">
           건강검진 결과

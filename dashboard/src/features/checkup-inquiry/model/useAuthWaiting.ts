@@ -30,21 +30,22 @@ export function useAuthWaiting() {
   const navigate = useNavigate()
 
   const [remaining, setRemaining] = useState(() => remainingOf(deadline))
-  const [announcement, setAnnouncement] = useState('')
+  // 마지막으로 읽어준 시각(초). 문장이 아니라 **어느 눈금이었는지**를 든다 —
+  // 읽을 시각이 아닌 초에 빈 문자열로 비웠다가 다시 채우면 라이브 리전이
+  // 그걸 새 알림으로 보고 매번 읽어서, 간격을 벌린 의미가 없어진다.
+  const [announcedAt, setAnnouncedAt] = useState(0)
 
-  // 관심사 1 — 남은 시간을 센다. 마감 시각에서 계산해야 탭이 백그라운드에
-  // 다녀와도 정확하다.
+  // 남은 시간을 센다. 마감 시각에서 계산해야 탭이 백그라운드에 다녀와도 정확하다.
   useEffect(() => {
-    const id = setInterval(() => setRemaining(remainingOf(deadline)), 1000)
+    const id = setInterval(() => {
+      const next = remainingOf(deadline)
+      setRemaining(next)
+      if (isAnnounceTick(next)) setAnnouncedAt(Math.ceil(next / 1000))
+    }, 1000)
     return () => clearInterval(id)
   }, [deadline])
 
-  // 관심사 2 — 스크린리더에 읽어줄 문장. 매초 갱신하면 270번 낭독된다.
-  useEffect(() => {
-    if (isAnnounceTick(remaining)) {
-      setAnnouncement(`남은 시간 ${formatRemaining(remaining)}`)
-    }
-  }, [remaining])
+  const announcement = announcedAt > 0 ? `남은 시간 ${formatRemaining(announcedAt * 1000)}` : ''
 
   const mutation = useMutation({
     mutationFn: () => requestResult(body ?? {}, multiFactorInfo),
