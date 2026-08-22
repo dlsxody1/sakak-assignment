@@ -14,8 +14,11 @@
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
     "@tanstack/react-router": "^1.170.31",
+    "apexcharts": "^6.10.0",
     "react": "^19.2.8",
+    "react-apexcharts": "^2.1.1",
     "react-dom": "^19.2.8",
+    "react-icons": "^5.7.0",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
