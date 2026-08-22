@@ -1,20 +1,31 @@
 # 남은 작업
 
-과제 제출 전까지 해야 할 것. **평가 기준에 걸리는 것부터** 위에 둔다.
+**대시보드를 먼저 끝내고 알고리즘으로 간다.** 패키지가 독립이라 순서를 정한 것이고,
+알고리즘이 덜 중요해서가 아니다.
+
+## 대시보드 (지금 하는 것)
 
 | 순위 | 작업 | 왜 지금 | 문서 |
 | --- | --- | --- | --- |
-| 1 | 개미수열 알고리즘 | **과제 절반이 통째로 비어 있다** | [algorithm.md](algorithm.md) |
-| 2 | 2단계 인증 연동 | 평가 기준 "API 연동 정확성"의 핵심 | [two-factor-auth.md](two-factor-auth.md) |
-| 3 | 배포 | 평가자가 링크로 열어봐야 한다 | [deployment.md](deployment.md) |
-| 4 | 자잘한 것 | 큰 것 끝나고 | [minor.md](minor.md) |
+| 1 | 2단계 인증 연동 | 평가 기준 "API 연동 정확성"의 핵심. 지금 fixture만 읽는다 | [two-factor-auth.md](two-factor-auth.md) |
+| 2 | 배포 | 평가자가 링크로 열어봐야 한다 | [deployment.md](deployment.md) |
+| 3 | 자잘한 것 | 위 둘 끝나고 | [minor.md](minor.md) |
+
+## 그 다음
+
+| 작업 | 상태 | 문서 |
+| --- | --- | --- |
+| 개미수열 | **소스 없음.** `package.json`과 README 뼈대만 있다 | [algorithm.md](algorithm.md) |
+
+착수 전에 [algorithm.md](algorithm.md)를 먼저 읽는다 — `n=99`를 문자열로 만들 수 없어서
+순진한 구현이 통하지 않는다. 접근 방식을 정하고 시작해야 한다.
 
 ## 지금 상태
 
 | 패키지 | 상태 |
 | --- | --- |
-| `dashboard/` | 화면 완성. 110 테스트 통과. fixture로 동작하고 실 API 미연동 |
-| `algorithm/` | **package.json과 README만 있다. 소스 없음** |
+| `dashboard/` | 화면 완성. 110 테스트 통과. **fixture로 동작하고 실 API 미연동** |
+| `algorithm/` | 소스 없음 |
 
 ## 평가 기준 대비
 
