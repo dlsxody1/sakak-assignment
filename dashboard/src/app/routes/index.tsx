@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute("/")({
-  component: () => <main className="mx-auto max-w-2xl p-8"></main>,
-});
+import { DashboardPage } from '@/pages/dashboard'
+
+export const Route = createFileRoute('/')({
+  component: DashboardPage,
+})
