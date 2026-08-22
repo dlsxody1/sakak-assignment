@@ -184,10 +184,17 @@ describe('세그먼트 규약', () => {
     // 핸들러가 필요한 컴포넌트가 model의 훅에서 직접 받는다.
     //
     // shared/ui의 프리미티브(<Button onClick>)는 DOM 이벤트 위임이라 예외다.
+    //
+    // 잡으려는 것은 **props 타입 선언**이다. 라이브러리 옵션 객체
+    // (useMutation의 onSuccess/onError 같은)는 호출부 바로 옆에 언제 불리는지가
+    // 드러나 있고 컴포넌트 사이를 타고 내려가지 않는다 — 이 규칙의 대상이 아니다.
+    // 그래서 타입 선언 자리(interface·type)에서만 찾는다.
     const callbackProp = /\bon[A-Z]\w*\??\s*:\s*\([^)]*\)\s*=>/g
+    const typeDeclaration = /(?:interface\s+\w+\s*{|type\s+\w+\s*=\s*{)[^}]*}/gs
 
     const violations = files
       .filter(({ posix }) => !posix.startsWith('shared/ui/') && !isTest(posix))
+      .map(({ rel, source }) => ({ rel, source: (source.match(typeDeclaration) ?? []).join('\n') }))
       .flatMap(({ rel, source }) =>
         [...source.matchAll(callbackProp)].map(
           (m) => `${rel} → ${m[0].split(':')[0].trim()} (model의 훅에서 직접 받을 것)`,
