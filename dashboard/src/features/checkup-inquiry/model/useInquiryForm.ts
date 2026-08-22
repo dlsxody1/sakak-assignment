@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 
-import { useSession, type Sex } from '@/entities/user'
+import { useJudgementSex, type Sex } from '@/entities/user'
 import { requestAuth } from '../api/request-checkup'
 import { buildInquiryBody } from '../lib/build-body'
 import { validateInquiry, type InquiryErrors } from '../lib/validate-form'
@@ -23,23 +23,23 @@ const EMPTY: InquiryForm = {
 /**
  * 인증 폼. 필드 상태와 1차 요청을 함께 갖는다.
  *
- * 성별은 폼 로컬 상태가 아니라 `entities/user` 세션에 바로 쓴다.
+ * 성별은 폼 로컬 상태가 아니라 `entities/user`의 판정 기준에 바로 쓴다.
  * 판정이 쓰는 값이고 인증이 끝나도 남아야 해서, 임시 복사본을 두면
  * 두 곳이 어긋난다.
  */
 export function useInquiryForm() {
   const [form, setForm] = useState(EMPTY)
   const [errors, setErrors] = useState<InquiryErrors>({})
-  const sessionSex = useSession((state) => state.sex)
-  const setSessionSex = useSession((state) => state.setSex)
-  // 세션의 성별은 대시보드가 판정에 쓰느라 항상 값이 있다(기본 남성).
+  const judgementSex = useJudgementSex((state) => state.sex)
+  const setJudgementSex = useJudgementSex((state) => state.setSex)
+  // 판정 기준 성별은 대시보드가 쓰느라 항상 값이 있다(기본 남성).
   // 폼에는 "아직 안 고름"이 있어야 해서 선택 여부를 따로 센다 —
   // 안 그러면 남성이 조용히 선택된 채 제출되고 검증이 영영 안 걸린다.
   const [hasChosenSex, setHasChosenSex] = useState(false)
-  const sex = hasChosenSex ? sessionSex : ''
+  const sex = hasChosenSex ? judgementSex : ''
 
   const setSex = (next: Sex) => {
-    setSessionSex(next)
+    setJudgementSex(next)
     setHasChosenSex(true)
     setErrors((current) => ({ ...current, sex: undefined }))
   }

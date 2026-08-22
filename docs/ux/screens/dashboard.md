@@ -148,7 +148,7 @@
 **2단계 인증 플로우** — [screens/auth.md](auth.md)가 `/login`에서 설계한다.
 이 화면은 인증 여부와 무관하게 열리고, 부제가 데이터 출처를 밝힌다.
 
-**성별 입력** — [인증 폼](auth.md)에서 받아 `entities/user`의 zustand 세션에 보관한다.
+**성별 입력** — [인증 폼](auth.md)에서 받아 `entities/user`의 판정 기준 스토어에 보관한다.
 API가 성별을 주지 않는데 `waist`·`hemoglobin`·`yGPT`는 기준이 성별로 갈리므로,
 잘못된 기준으로 조용히 판정하느니 **무엇을 기준으로 봤는지 드러낸다.**
 인증 폼이 세션 값을 채우고 소비하는 쪽(`useCheckupOverview`)은 바뀌지 않았다.

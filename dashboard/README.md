@@ -183,7 +183,7 @@ FSD. 규칙의 단일 출처는 [`shared/config/fsd.ts`](src/shared/config/fsd.t
 ```
 entities/health-reference  판정 도메인(순수 함수) + 판정 배지·색 체계
 entities/checkup           응답 정규화, Query 훅, 검사 항목 행·상세·이력 표현
-entities/user              성별 세션 (zustand)
+entities/user              판정에 쓸 성별 (zustand) — 신원이 아니라 판정 기준이다
 features/measurement-detail  항목·묶음을 펼쳐 판정 근거를 확인하는 행위
 features/trend-explorer      항목을 골라 추이를 보는 행위 (기준 띠 계산 포함)
 features/checkup-inquiry     2단계 인증으로 검진 결과를 조회하는 행위
