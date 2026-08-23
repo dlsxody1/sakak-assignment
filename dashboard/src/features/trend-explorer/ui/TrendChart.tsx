@@ -93,6 +93,9 @@ export function TrendChart({ active, points, bands, axis }: TrendChartProps) {
               tickAmount: axis?.tickAmount,
               labels: {
                 style: { colors: '#64748b', fontSize: '11px' },
+                // 기본값은 라벨 오른쪽 끝을 플롯 왼쪽 경계에 붙인다. 그 자리를 기준 띠와
+                // 첫 회차 마커가 차지해서 마지막 글자가 가려진다 (`171.5` → `171.`).
+                offsetX: -6,
                 formatter: (value) => (Number.isInteger(value) ? String(value) : value.toFixed(1)),
               },
             },
