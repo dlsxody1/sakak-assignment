@@ -1,10 +1,13 @@
 export type {
   Checkup,
   CheckupHistory,
+  CheckupResponse,
   CheckupVisit,
   MeasurementKey,
   Reference,
 } from './model/types'
+export { normalizeCheckupResponse } from './lib/normalize'
+export { describeSource } from './lib/describe-source'
 export { MEASUREMENT_KEYS } from './model/types'
 export type { Measurement, MeasurementCriteria, MeasurementPoint } from './model/measurement'
 export { MEASUREMENT_GROUPS, MEASUREMENT_LABELS } from './model/labels'

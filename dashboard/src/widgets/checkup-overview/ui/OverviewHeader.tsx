@@ -1,5 +1,5 @@
 import { JudgementBadge } from '@/entities/health-reference'
-import { SexSwitch } from '@/features/sex-switch'
+import { SEX_LABELS } from '@/entities/user'
 import { Card } from '@/shared/ui/Card'
 import type { CheckupOverview } from '../model/types'
 import { SummaryBar } from './SummaryBar'
@@ -10,7 +10,7 @@ interface OverviewHeaderProps {
 
 /** 최신 회차 상태 요약. 첫 화면에서 "지금 뭘 봐야 하나"에 답한다. */
 export function OverviewHeader({ overview }: OverviewHeaderProps) {
-  const { attention, distribution, latestDate, evaluation, undeterminedCount } = overview
+  const { attention, distribution, latestDate, evaluation, undeterminedCount, sex } = overview
   const judged = distribution.reduce((sum, entry) => sum + entry.count, 0)
 
   return (
@@ -23,7 +23,10 @@ export function OverviewHeader({ overview }: OverviewHeaderProps) {
             {evaluation && <span className="ml-2 text-slate-400">종합판정 {evaluation}</span>}
           </p>
         </div>
-        <SexSwitch />
+        {/* 컨트롤은 인증 폼으로 옮겼다. 무엇을 기준으로 판정했는지는 남아야 한다. */}
+        <p className="text-xs text-slate-500">
+          판정 기준 <span className="font-medium text-slate-700">{SEX_LABELS[sex]}</span>
+        </p>
       </div>
 
       <div className="mt-3">

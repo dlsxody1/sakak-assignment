@@ -14,5 +14,5 @@ export const checkupKeys = {
  * 인증 없이 화면을 볼 수 있어야 하므로 fixture를 같은 정규화 경로로 흘린다.
  */
 export function fetchCheckupHistory(): CheckupHistory {
-  return normalizeCheckupResponse(fixture as CheckupResponse)
+  return normalizeCheckupResponse(fixture as CheckupResponse, true)
 }

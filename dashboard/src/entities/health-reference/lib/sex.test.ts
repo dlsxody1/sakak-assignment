@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { judge } from '@/entities/health-reference'
+import { judge } from './judge'
 
 // 성별 전환이 실제로 판정을 바꾸는지 도메인 수준에서 고정한다.
 // fixture의 2025 값들은 우연히 남녀 판정이 같아서 화면만 봐서는 확인되지 않는다.

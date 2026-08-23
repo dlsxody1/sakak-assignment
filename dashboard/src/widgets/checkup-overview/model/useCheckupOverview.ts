@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { groupVisitsByDate, useCheckupHistory } from '@/entities/checkup'
 import { JUDGEMENT_ORDER } from '@/entities/health-reference'
-import { useSession } from '@/entities/user'
+import { useJudgementSex } from '@/entities/user'
 import { buildMeasurements } from '../lib/build-measurements'
 import { countByJudgement, countUndetermined, selectAttention } from '../lib/summarize'
 import type { CheckupOverview } from './types'
@@ -13,8 +13,8 @@ import type { CheckupOverview } from './types'
  */
 export function useCheckupOverview() {
   const query = useCheckupHistory()
-  // 성별은 사용자가 고른 값이다. API가 주지 않아서 세션에서 받는다.
-  const sex = useSession((state) => state.sex)
+  // 성별은 사용자가 고른 값이다. API가 주지 않아서 인증 폼에서 받는다.
+  const sex = useJudgementSex((state) => state.sex)
 
   const overview = useMemo<CheckupOverview | undefined>(() => {
     if (!query.data) return undefined
@@ -26,6 +26,7 @@ export function useCheckupOverview() {
     return {
       patientName: history.patientName,
       latestDate: latest?.date ?? '',
+      sex,
       evaluation: latest?.evaluation ?? '',
       measurements,
       distribution: countByJudgement(measurements, JUDGEMENT_ORDER),

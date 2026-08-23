@@ -99,9 +99,17 @@ fixture 6회차를 판정하면 **정상 70 · 판정불가 30 · 미측정 14 �
 
 ## 데이터
 
-지금은 fixture를 읽는다 ([`shared/api/__fixtures__`](src/shared/api/__fixtures__)).
-실 API는 2단계 인증(토스, 4분 30초 제한)을 거쳐야 응답이 나오므로,
-인증 없이도 화면을 볼 수 있게 fixture를 같은 정규화 경로로 흘린다.
+**기본은 예시 데이터다.** 링크를 열면 인증 없이 바로 대시보드가 보인다
+([`shared/api/__fixtures__`](src/shared/api/__fixtures__)). 부제에 `예시 데이터`가 붙어
+지금 보는 게 실제 기록이 아님을 밝힌다.
+
+실 데이터는 `내 검진 결과 불러오기` → [`/login`](src/pages/auth)에서
+2단계 인증(토스, 4분 30초)을 거친다. 인증을 안 해도 화면이 온전히 보이는 이유는
+실 데이터와 fixture가 **같은 정규화 경로**를 지나기 때문이다.
+
+**실패해도 폴백 코드가 없다.** 2차 응답이 성공하면 Query 캐시
+(`checkupKeys.history()`)를 덮어쓰고, 실패하면 안 덮는다 — 덮지 않는 것이 곧 폴백이다.
+`try/catch`도 `?? fixture`도 필요 없다.
 
 응답에서 주의할 것:
 
@@ -111,6 +119,62 @@ fixture 6회차를 판정하면 **정상 70 · 판정불가 30 · 미측정 14 �
 - `resultList`는 날짜당 일반·구강 2건. 안정 정렬이라 순서가 입력에 좌우되므로
   일반을 먼저 두도록 명시한다
 
+## 2단계 인증과 프록시
+
+**CANDiY는 CORS 헤더를 주지 않는다.** 직접 확인했다 —
+`OPTIONS /v1/nhis/checkup`이 403을 주고 `access-control-*` 헤더가 하나도 없다.
+브라우저에서 직접 부를 수 없으므로 서버를 거치는 것 외에 방법이 없다.
+
+그래서 [`api/checkup.ts`](api/checkup.ts) 서버리스 함수가 프록시한다.
+**이게 API 키 노출 문제까지 같이 해결한다** — `API_KEY`에 `VITE_` 접두사가 없어서
+번들에 들어가지 않는다. 제약이 강요한 우회가 보안 결정과 같은 답이었다.
+
+```
+폼 → 1차 요청 (inquiryType:"0", loginTypeLevel:"8"=토스)
+   → 응답의 .data 통째로 보관
+   → 사용자가 토스 앱에서 인증 (4분 30초)
+   → 2차 요청 (isContinue:"1" + multiFactorInfo:<1차 .data>)
+   → Query 캐시에 주입 → 대시보드
+```
+
+- **`multiFactorInfo`는 1차 응답의 `.data`를 통째로** 넣는다. 일부만 골라 넣으면 실패한다.
+  프록시도 바디를 파싱하지 않고 원문을 그대로 넘긴다.
+- **4분 30초를 함수가 붙잡지 않는다.** 대기는 브라우저가 하고 함수는 요청 1건씩
+  짧게 끝난다. 서버리스에서 4분 30초를 잡고 있으면 실행 제한에 걸린다.
+- **폴링하지 않는다.** 사용자가 `인증을 완료했습니다`를 누를 때 2차를 1회 보낸다.
+  검증된 출처([`probe-candiy.sh`](scripts/probe-candiy.sh))가 그 형태이고, 인증 완료 전
+  호출의 동작은 확인되지 않았다 — 모르는 채로 반복 호출하면 인증 세션을 스스로 깨뜨릴 수 있다.
+- 프록시는 인증 없이 공개되므로 **필수 필드를 서버에서도 검증한다.**
+  안 하면 남의 키로 임의 요청을 대신 쏴주는 오픈 프록시가 된다.
+
+**성별은 인증 폼에서 받는다.** API 응답에 성별이 없는데 허리둘레·혈색소·감마지티피는
+기준이 성별로 갈린다. 예시 데이터는 남성 기준으로 판정하고, 성별이 판정을 어떻게 바꾸는지는
+[`sex.test.ts`](src/entities/health-reference/lib/sex.test.ts)가 고정한다
+(혈색소 12.5는 남 정상B, 여 정상A).
+
+## 배포
+
+**[배포된 대시보드](https://dashboard-alpha-ten-71.vercel.app)** — 인증 없이 바로 보인다.
+
+Root Directory를 **`dashboard`**로 잡는다. 저장소 루트에 `package.json`도 lockfile도
+없고(패키지 2개가 각각 갖는다), `vercel.json`이 여기 있다. 루트로 잡으면 프레임워크
+감지도 SPA rewrite도 실패한다.
+
+| 항목 | 값 |
+| --- | --- |
+| Root Directory | `dashboard` |
+| Framework | Vite (자동 감지) |
+| 환경변수 | `API_KEY` — **`VITE_` 접두사를 붙이지 않는다** |
+
+접두사가 없으면 Vite가 번들에 주입하지 않는다. 붙이는 순간 키가 공개된다.
+저장 후 **재배포해야** 적용된다 (기존 배포에 소급되지 않는다).
+
+**키가 없어도 배포는 동작한다.** 대시보드가 예시 데이터로 열리고, 인증만
+`검진 조회 서비스가 설정되지 않았습니다`로 답한다.
+
+`api/`는 [`tsconfig.node.json`](tsconfig.node.json)의 `include`에 넣었다.
+안 넣으면 `tsc -b`가 함수를 건너뛰어 **빌드는 통과하고 런타임에 터진다.**
+
 ## 구조
 
 FSD. 규칙의 단일 출처는 [`shared/config/fsd.ts`](src/shared/config/fsd.ts)이고
@@ -119,12 +183,13 @@ FSD. 규칙의 단일 출처는 [`shared/config/fsd.ts`](src/shared/config/fsd.t
 ```
 entities/health-reference  판정 도메인(순수 함수) + 판정 배지·색 체계
 entities/checkup           응답 정규화, Query 훅, 검사 항목 행·상세·이력 표현
-entities/user              성별 세션 (zustand)
+entities/user              판정에 쓸 성별 (zustand) — 신원이 아니라 판정 기준이다
 features/measurement-detail  항목·묶음을 펼쳐 판정 근거를 확인하는 행위
 features/trend-explorer      항목을 골라 추이를 보는 행위 (기준 띠 계산 포함)
-features/sex-switch          판정에 쓸 성별을 고르는 행위
+features/checkup-inquiry     2단계 인증으로 검진 결과를 조회하는 행위
 widgets/checkup-overview     엔티티·피처 조립 + 요약 집계
 pages/dashboard              위젯 조립
+pages/auth                   인증 화면 조립
 ```
 
 `health-reference`가 `checkup`을 모르고 그 반대도 마찬가지다 —
@@ -141,6 +206,9 @@ import할 수 없어서, 실제 타입으로 좁히는 건 둘이 만나는 위�
 
 ## 아직 안 한 것
 
-- 2단계 인증 연동 (`features/checkup-inquiry`), 로그인 —
-  1차 요청 → 앱 인증 대기(4분 30초) → 2차 요청의 대기 상태 UX가 아직 없다
+- **인증 실패 원인을 나누지 못한다.** 사용자 거절·입력 불일치·서버 오류를 구분하려면
+  실패 응답의 형태를 알아야 하는데 probe가 성공 경로만 캡처했다. 문구 하나로 합쳐 두고
+  실제 실패 응답을 본 뒤 쪼갠다 — 추측으로 분기하면 모르는 코드에서 틀린 안내를 한다
+- **컴포넌트 테스트가 없다.** `@testing-library/react`가 없고 순수 함수와 경계만 검증한다.
+  폼 검증·타이머는 `lib/`의 순수 함수로 빼서 테스트를 붙였다
 - ApexCharts가 번들에 약 970 kB를 더한다. 라우트 분할이 필요해지면 그때 나눈다
