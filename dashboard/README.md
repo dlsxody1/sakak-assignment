@@ -10,6 +10,15 @@ pnpm install
 pnpm dev
 ```
 
+인증까지 로컬에서 돌리려면 `.env`에 `API_KEY`가 있어야 한다
+(`.env.example` 참고, **`VITE_` 접두사를 붙이지 않는다**).
+키가 없으면 대시보드는 예시 데이터로 열리고 인증만
+`검진 조회 서비스가 설정되지 않았습니다`로 답한다.
+
+`/api/checkup`은 Vercel 서버리스 함수라 `vite dev`가 기본으로는 실행하지 않는다 —
+[`vite.config.ts`](vite.config.ts)의 `apiDevServer` 플러그인이 개발 서버에서
+같은 함수를 불러 준다. 프록시 로직은 한 벌이고 배포는 Vercel이 같은 파일을 직접 쓴다.
+
 ## 스크립트
 
 | 명령 | 설명 |
