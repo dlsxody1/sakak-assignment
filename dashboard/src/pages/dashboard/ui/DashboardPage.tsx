@@ -7,7 +7,7 @@ import { CheckupOverview, DashboardHeading } from '@/widgets/checkup-overview'
  */
 export function DashboardPage() {
   return (
-    <div className="mx-auto flex max-w-6xl flex-col px-4 py-4 sm:px-6 lg:h-dvh lg:overflow-hidden lg:py-6">
+    <div className="mx-auto flex max-w-6xl flex-col px-4 py-4 sm:px-6 lg:h-dvh lg:overflow-hidden lg:py-6 xl:max-w-7xl 2xl:max-w-[1600px]">
       <DashboardHeading />
 
       <div className="min-h-0 flex-1">
