@@ -28,6 +28,15 @@ export function validateInquiry(input: InquiryInput): InquiryErrors {
     errors.telecom = '통신사를 선택해 주세요.'
   }
 
+  if (!input.loginTypeLevel) {
+    errors.loginTypeLevel = '인증 수단을 선택해 주세요.'
+  }
+
+  // 시작이 종료보다 뒤면 CANDiY가 무엇을 돌려줄지 모른다. 보내기 전에 막는다.
+  if (Number(input.startDate) > Number(input.endDate)) {
+    errors.startDate = '조회 시작 연도가 종료 연도보다 뒤일 수 없습니다.'
+  }
+
   if (!input.sex) {
     errors.sex = '판정 기준으로 쓸 성별을 선택해 주세요.'
   }

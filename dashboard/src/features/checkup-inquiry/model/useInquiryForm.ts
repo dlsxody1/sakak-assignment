@@ -10,12 +10,17 @@ import type { InquiryForm } from './types'
 
 const THIS_YEAR = String(new Date().getFullYear())
 
-/** 통신사는 기본값을 두지 않는다 — 두면 SKT가 조용히 선택된다. */
+/**
+ * 통신사와 인증 수단은 기본값을 두지 않는다 — 두면 하나가 조용히 선택된 채 제출된다.
+ * 조회 기간은 반대로 기본값이 있어야 한다. 안 고르고 제출하는 게 정상인 필드라
+ * 비워두면 매번 두 번 더 고르게 만든다.
+ */
 const EMPTY: InquiryForm = {
   legalName: '',
   birthdate: '',
   phoneNo: '',
   telecom: '',
+  loginTypeLevel: '',
   startDate: '2015',
   endDate: THIS_YEAR,
 }
