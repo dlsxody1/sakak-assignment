@@ -115,7 +115,7 @@ fixture 6회차를 판정하면 **정상 70 · 판정불가 30 · 미측정 14 �
 지금 보는 게 실제 기록이 아님을 밝힌다.
 
 실 데이터는 `내 검진 결과 불러오기` → [`/login`](src/pages/auth)에서
-2단계 인증(토스, 4분 30초)을 거친다. 인증을 안 해도 화면이 온전히 보이는 이유는
+2단계 인증(간편인증 12종 중 택1, 4분 30초)을 거친다. 인증을 안 해도 화면이 온전히 보이는 이유는
 실 데이터와 fixture가 **같은 정규화 경로**를 지나기 때문이다.
 
 **실패해도 폴백 코드가 없다.** 2차 응답이 성공하면 Query 캐시
@@ -141,12 +141,21 @@ fixture 6회차를 판정하면 **정상 70 · 판정불가 30 · 미측정 14 �
 번들에 들어가지 않는다. 제약이 강요한 우회가 보안 결정과 같은 답이었다.
 
 ```
-폼 → 1차 요청 (inquiryType:"0", loginTypeLevel:"8"=토스)
+폼 → 1차 요청 (inquiryType:"0", loginTypeLevel:<폼에서 고른 값>)
    → 응답의 .data 통째로 보관
-   → 사용자가 토스 앱에서 인증 (4분 30초)
+   → 사용자가 고른 앱에서 인증 (4분 30초)
    → 2차 요청 (isContinue:"1" + multiFactorInfo:<1차 .data>)
    → Query 캐시에 주입 → 대시보드
 ```
+
+- **인증 수단은 고정하지 않는다.** 12종을 로고 그리드로 펼쳐 고르게 한다 — 하나로 박으면
+  그 앱을 안 쓰는 사람은 조회 자체를 못 한다. probe로 실제 검증한 값은 `8`(토스)
+  하나뿐이고, 나머지는 CANDiY 스펙 표기를 따랐다.
+- **통신사는 화면에 6개, API에는 3개다.** 알뜰폰 3종은 모회사 망 코드(`0`/`1`/`2`)를
+  그대로 보낸다. 알뜰폰용 별도 코드를 받는지 probe로 확인되지 않았고, 미검증 값을
+  보내면 인증이 조용히 실패한다. 변환은 [`build-body.ts`](src/features/checkup-inquiry/lib/build-body.ts)가 한다.
+- **휴대폰 번호는 화면에서만 하이픈이 붙는다.** 상태와 요청 바디는 숫자 11자리 그대로다
+  ([`format-phone.ts`](src/features/checkup-inquiry/lib/format-phone.ts)).
 
 - **`multiFactorInfo`는 1차 응답의 `.data`를 통째로** 넣는다. 일부만 골라 넣으면 실패한다.
   프록시도 바디를 파싱하지 않고 원문을 그대로 넘긴다.
@@ -195,13 +204,21 @@ FSD. 규칙의 단일 출처는 [`shared/config/fsd.ts`](src/shared/config/fsd.t
 entities/health-reference  판정 도메인(순수 함수) + 판정 배지·색 체계
 entities/checkup           응답 정규화, Query 훅, 검사 항목 행·상세·이력 표현
 entities/user              판정에 쓸 성별 (zustand) — 신원이 아니라 판정 기준이다
-features/measurement-detail  항목·묶음을 펼쳐 판정 근거를 확인하는 행위
+features/measurement-detail  항목을 펼쳐 판정 근거를 확인하는 행위
 features/trend-explorer      항목을 골라 추이를 보는 행위 (기준 띠 계산 포함)
 features/checkup-inquiry     2단계 인증으로 검진 결과를 조회하는 행위
 widgets/checkup-overview     엔티티·피처 조립 + 요약 집계
 pages/dashboard              위젯 조립
 pages/auth                   인증 화면 조립
+shared/ui                    도메인 없는 프리미티브 — Card, Field, Input, Select,
+                             Button, ChoiceGrid(로고 타일 라디오 그룹)
+shared/lib                   React를 모르는 순수 함수 (aria 배선 등)
+shared/api                   fetcher + fixture
 ```
+
+`shared`만 배럴 없이 파일을 직접 import한다 (`@/shared/ui/Input`) — 경계 테스트의
+명시적 예외다. `shared/ui`의 프리미티브는 `onClick`·`onChange` 같은 **DOM 콜백만**
+받는다. 도메인 의미를 가진 콜백은 여기서도 금지다.
 
 `health-reference`가 `checkup`을 모르고 그 반대도 마찬가지다 —
 같은 레이어의 슬라이스끼리는 참조하지 않고 위젯에서 합쳐진다.
@@ -220,6 +237,10 @@ import할 수 없어서, 실제 타입으로 좁히는 건 둘이 만나는 위�
 - **인증 실패 원인을 나누지 못한다.** 사용자 거절·입력 불일치·서버 오류를 구분하려면
   실패 응답의 형태를 알아야 하는데 probe가 성공 경로만 캡처했다. 문구 하나로 합쳐 두고
   실제 실패 응답을 본 뒤 쪼갠다 — 추측으로 분기하면 모르는 코드에서 틀린 안내를 한다
+- **인증 수단 로고 파일이 없다.** `ChoiceGrid`가 `/auth/<slug>.svg`를 찾고, 없으면
+  브랜드색 배경 + 짧은 글자로 폴백한다. `public/auth/`에 파일을 떨구면 코드 수정 없이
+  로고로 바뀐다 — 지금 보이는 색 타일이 그 폴백이다
 - **컴포넌트 테스트가 없다.** `@testing-library/react`가 없고 순수 함수와 경계만 검증한다.
-  폼 검증·타이머는 `lib/`의 순수 함수로 빼서 테스트를 붙였다
+  폼 검증·타이머는 `lib/`의 순수 함수로 빼서 테스트를 붙였다. `ChoiceGrid`의 화살표
+  이동도 여기 해당한다 — 브라우저에서 확인했지만 회귀를 잡을 테스트는 없다
 - ApexCharts가 번들에 약 970 kB를 더한다. 라우트 분할이 필요해지면 그때 나눈다

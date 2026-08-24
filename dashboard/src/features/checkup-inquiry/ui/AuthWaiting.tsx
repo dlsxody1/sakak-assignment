@@ -1,3 +1,4 @@
+import { Button } from '@/shared/ui/Button'
 import { useAuthWaiting } from '../model/useAuthWaiting'
 
 /**
@@ -12,6 +13,7 @@ export function AuthWaiting() {
     remaining,
     total,
     label,
+    authApp,
     announcement,
     isUrgent,
     isExpired,
@@ -26,13 +28,9 @@ export function AuthWaiting() {
         <p role="alert" tabIndex={-1} className="rounded-lg bg-suspect-soft px-3 py-2 text-sm text-suspect">
           인증 시간 4분 30초가 지났습니다. 입력한 내용은 그대로 두었으니 다시 요청해 주세요.
         </p>
-        <button
-          type="button"
-          onClick={cancel}
-          className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white"
-        >
+        <Button type="button" onClick={cancel}>
           폼으로 돌아가기
-        </button>
+        </Button>
       </div>
     )
   }
@@ -40,11 +38,11 @@ export function AuthWaiting() {
   return (
     <div className="space-y-4">
       <h2 tabIndex={-1} className="text-base font-semibold text-slate-900">
-        토스 앱에서 인증해 주세요
+        {authApp} 앱에서 인증해 주세요
       </h2>
 
       <p className="text-sm text-slate-600">
-        토스 앱에 인증 요청을 보냈습니다. 앱에서 인증을 마친 뒤 아래 버튼을 눌러 주세요.
+        {authApp} 앱에 인증 요청을 보냈습니다. 앱에서 인증을 마친 뒤 아래 버튼을 눌러 주세요.
       </p>
 
       <div>
@@ -76,22 +74,12 @@ export function AuthWaiting() {
       </span>
 
       <div className="space-y-2">
-        <button
-          type="button"
-          onClick={confirm}
-          disabled={isSubmitting}
-          className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white disabled:bg-slate-400"
-        >
+        <Button type="button" onClick={confirm} disabled={isSubmitting}>
           {isSubmitting ? '결과를 불러오는 중…' : '인증을 완료했습니다'}
-        </button>
-        <button
-          type="button"
-          onClick={cancel}
-          disabled={isSubmitting}
-          className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700"
-        >
+        </Button>
+        <Button type="button" variant="ghost" onClick={cancel} disabled={isSubmitting}>
           취소
-        </button>
+        </Button>
       </div>
     </div>
   )
