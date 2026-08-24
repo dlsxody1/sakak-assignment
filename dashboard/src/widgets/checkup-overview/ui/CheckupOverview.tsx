@@ -35,7 +35,10 @@ export function CheckupOverview() {
         <TrendExplorer measurements={overview.measurements} />
         <Card className="flex min-h-0 flex-col overflow-hidden p-4">
           <h3 className="mb-2.5 shrink-0 text-sm font-semibold text-slate-900">검진 이력</h3>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          {/* 스크롤은 lg 이상에서만 — 페이지 높이를 고정하는 것도 lg부터다.
+              좁은 화면에서 overscroll-contain이 걸리면 이 카드 위의 터치가
+              페이지로 전달되지 않아 스크롤이 멈춘다. */}
+          <div className="min-h-0 flex-1 lg:overflow-y-auto lg:overscroll-contain">
             <VisitList days={overview.visitDays} />
           </div>
         </Card>
