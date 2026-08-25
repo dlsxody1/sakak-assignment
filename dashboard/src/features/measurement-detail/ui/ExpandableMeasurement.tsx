@@ -15,7 +15,7 @@ export function ExpandableMeasurement({ measurement }: ExpandableMeasurementProp
   const { isOpen, toggle } = useDisclosure()
 
   return (
-    <li className="border-b border-slate-100 last:border-0">
+    <li className="@container border-b border-slate-100 last:border-0">
       <button
         type="button"
         onClick={toggle}

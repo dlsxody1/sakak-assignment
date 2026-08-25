@@ -32,9 +32,9 @@ export function MeasurementRow<TJudgement extends string>({
   const points = toSparkPoints(measurement.series.map((point) => point.value))
 
   return (
-    <span className="flex w-full items-center gap-3">
+    <span className="flex w-full items-center gap-2 @sm:gap-3">
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium text-slate-900">
+        <span className="block text-sm leading-snug font-medium break-keep text-slate-900">
           {measurement.label}
         </span>
         <span className="tabular mt-0.5 block text-base font-semibold text-slate-900">
@@ -45,7 +45,9 @@ export function MeasurementRow<TJudgement extends string>({
         </span>
       </span>
 
-      <Sparkline points={points} color={sparkColor} />
+      <span className="hidden @xs:block">
+        <Sparkline points={points} color={sparkColor} />
+      </span>
 
       {measurement.hasCriteria ? (
         <Badge judgement={measurement.judgement} />

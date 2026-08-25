@@ -74,17 +74,25 @@ export function TrendChart({ active, points, bands, axis }: TrendChartProps) {
             },
             colors: [color],
             stroke: { width: 2.5, curve: 'straight' },
-            markers: { size: 5, strokeWidth: 2, strokeColors: '#fff', hover: { size: 7 } },
+            markers: {
+              size: 5,
+              strokeWidth: 2,
+              strokeColors: '#fff',
+              hover: { size: 7 },
+            },
             dataLabels: { enabled: false },
             grid: {
               show: false,
-              padding: { left: 0, right: 0, top: 0, bottom: 0 },
+              // 첫·마지막 회차 마커가 플롯 경계에 걸린다. 왼쪽은 y축 라벨과 겹치고
+              // 오른쪽은 마커 절반이 잘린다. 마커 반지름(5)에 여유를 더해 띄운다.
+              // 기준 띠는 그려진 플롯을 재서 깔리므로(usePlotArea) 같이 따라온다.
+              padding: { left: 10, right: 10, top: 0, bottom: 0 },
             },
             xaxis: {
               categories: points.map((point) => point.date.slice(0, 4)),
               axisBorder: { show: false },
               axisTicks: { show: false },
-              tooltip: { enabled: false },
+              tooltip: { enabled: true },
               labels: { style: { colors: '#64748b', fontSize: '11px' } },
             },
             yaxis: {
@@ -92,13 +100,19 @@ export function TrendChart({ active, points, bands, axis }: TrendChartProps) {
               max: axis?.max,
               tickAmount: axis?.tickAmount,
               labels: {
+                offsetY: -4,
                 style: { colors: '#64748b', fontSize: '11px' },
+                padding: 14,
                 formatter: (value) => (Number.isInteger(value) ? String(value) : value.toFixed(1)),
               },
             },
             tooltip: {
-              x: { formatter: (_, opts) => points[opts?.dataPointIndex ?? -1]?.date ?? '' },
-              y: { formatter: (value) => `${value}${active.unit ? ` ${active.unit}` : ''}` },
+              x: {
+                formatter: (_, opts) => points[opts?.dataPointIndex ?? -1]?.date ?? '',
+              },
+              y: {
+                formatter: (value) => `${value}${active.unit ? ` ${active.unit}` : ''}`,
+              },
             },
             noData: { text: '표시할 데이터가 없습니다' },
           }}

@@ -16,7 +16,7 @@ export function Sparkline({ points, color }: SparklineProps) {
     <svg
       viewBox="-4 -8 108 116"
       preserveAspectRatio="none"
-      className="h-8 w-16 shrink-0 overflow-visible"
+      className="h-7 w-12 shrink-0"
       aria-hidden="true"
     >
       <path

@@ -31,7 +31,7 @@ export function TrendExplorer({ measurements }: TrendExplorerProps) {
             value={selectedKey}
             onChange={(event) => setSelectedKey(event.target.value as MeasurementKey)}
             aria-label="추이를 볼 검사 항목"
-            className="appearance-none rounded-lg bg-slate-100 py-1.5 pr-8 pl-3 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-200"
+            className="appearance-none rounded-lg border border-slate-300 bg-white py-1.5 pr-8 pl-3 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50"
           >
             {options.map((group) => (
               <optgroup key={group.label} label={group.label}>

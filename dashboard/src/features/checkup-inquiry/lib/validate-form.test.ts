@@ -8,6 +8,7 @@ const VALID: InquiryInput = {
   birthdate: '19900101',
   phoneNo: '01012345678',
   telecom: '0',
+  loginTypeLevel: '1',
   startDate: '2015',
   endDate: '2026',
   sex: 'male',
@@ -40,6 +41,20 @@ describe('validateInquiry', () => {
 
   it('성별 미선택을 잡는다 — 없으면 판정이 조용히 틀린다', () => {
     expect(validateInquiry({ ...VALID, sex: '' })).toHaveProperty('sex')
+  })
+
+  it('인증 수단 미선택을 잡는다 — 고정하면 그 앱을 안 쓰는 사람이 조회를 못 한다', () => {
+    expect(validateInquiry({ ...VALID, loginTypeLevel: '' })).toHaveProperty('loginTypeLevel')
+  })
+
+  it('시작 연도가 종료보다 뒤면 잡는다 — 보내봐야 결과를 모른다', () => {
+    expect(validateInquiry({ ...VALID, startDate: '2026', endDate: '2015' })).toHaveProperty(
+      'startDate',
+    )
+  })
+
+  it('같은 연도는 통과한다 — 한 해만 조회하는 건 정상이다', () => {
+    expect(validateInquiry({ ...VALID, startDate: '2020', endDate: '2020' })).toEqual({})
   })
 
   it('오류가 여러 개면 전부 모아서 돌려준다 — 한 번에 고치게', () => {

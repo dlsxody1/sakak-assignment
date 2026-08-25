@@ -28,12 +28,24 @@ export function usePlotArea(redrawKey: unknown) {
     const canvasRect = canvas.getBoundingClientRect()
     if (gridRect.height === 0) return
 
-    setPlot({
+    const next = {
       left: gridRect.left - canvasRect.left,
       top: gridRect.top - canvasRect.top,
       width: gridRect.width,
       height: gridRect.height,
-    })
+    }
+
+    // 값이 같아도 새 객체면 리렌더가 돌고, 그 리렌더가 ApexCharts를 다시 그리게 해서
+    // 다시 여기로 돌아온다 — 무한 루프. 실제로 바뀌었을 때만 상태를 올린다.
+    setPlot((prev) =>
+      prev &&
+      prev.left === next.left &&
+      prev.top === next.top &&
+      prev.width === next.width &&
+      prev.height === next.height
+        ? prev
+        : next,
+    )
   }, [])
 
   // 차트가 그려진 뒤에 재야 한다. 렌더 직후에는 grid 엘리먼트가 아직 없다.
@@ -42,15 +54,34 @@ export function usePlotArea(redrawKey: unknown) {
     return () => cancelAnimationFrame(frame)
   }, [measure, redrawKey])
 
-  // 컨테이너 크기가 바뀌면 축 폭도 바뀐다.
+  // 컨테이너가 아니라 그려진 grid를 관측한다. 컨테이너를 보면 ApexCharts가
+  // SVG를 다시 그리기 전에 콜백이 와서 옛 좌표를 읽는다 — 창을 줄여도 띠만
+  // 옛 폭으로 남는다. grid는 Apex가 다시 그린 뒤에야 크기가 바뀌므로 순서가 맞다.
+  // Apex가 SVG를 통째로 갈아끼우면 관측 대상이 사라지니 MutationObserver로 다시 건다.
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
-    const observer = new ResizeObserver(measure)
-    observer.observe(container)
-    return () => observer.disconnect()
-  }, [measure])
+    const resize = new ResizeObserver(measure)
+    let observed: Element | null = null
+
+    const attach = () => {
+      const grid = container.querySelector('.apexcharts-grid')
+      if (grid === observed) return
+      if (observed) resize.unobserve(observed)
+      if (grid) resize.observe(grid)
+      observed = grid
+    }
+
+    attach()
+    const mutation = new MutationObserver(attach)
+    mutation.observe(container, { childList: true, subtree: true })
+
+    return () => {
+      resize.disconnect()
+      mutation.disconnect()
+    }
+  }, [measure, redrawKey])
 
   return { containerRef, plot }
 }

@@ -1,17 +1,21 @@
+import { josa } from '@/shared/lib/josa'
+import { Button } from '@/shared/ui/Button'
 import { useAuthWaiting } from '../model/useAuthWaiting'
 
 /**
  * 인증 대기 화면.
  *
  * 카운트다운 숫자는 `aria-hidden`이다 — 매초 바뀌는 노드를 라이브 리전에 두면
- * 4분 30초 동안 270번 낭독되고 그 사이 다른 건 아무것도 들리지 않는다.
+ * 제한 시간 내내 매초 낭독되고 그 사이 다른 건 아무것도 들리지 않는다.
  * 대신 아래 `role="status"` 노드가 30초(마지막 1분은 10초) 간격으로만 갱신된다.
  */
 export function AuthWaiting() {
   const {
     remaining,
     total,
+    totalLabel,
     label,
+    authApp,
     announcement,
     isUrgent,
     isExpired,
@@ -24,15 +28,28 @@ export function AuthWaiting() {
     return (
       <div className="space-y-4">
         <p role="alert" tabIndex={-1} className="rounded-lg bg-suspect-soft px-3 py-2 text-sm text-suspect">
-          인증 시간 4분 30초가 지났습니다. 입력한 내용은 그대로 두었으니 다시 요청해 주세요.
+          {/*
+            제한 시간은 상수에서 만든다 — 문장에 박으면 상수만 바뀌었을 때 화면이 거짓말한다.
+            조사도 값에서 정한다: `5분`은 "이", `4분 30초`는 "가"다.
+          */}
+          인증 시간 {totalLabel}
+          {josa(totalLabel, '이', '가')} 지났습니다. 입력한 내용은 그대로 두었으니 다시 요청해
+          주세요.
         </p>
-        <button
-          type="button"
-          onClick={cancel}
-          className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white"
-        >
+
+        {/*
+          CANDiY는 보안숫자를 AI가 자동 처리하고 **3회 실패하면 수동 입력이 필요**해진다.
+          그 상태를 응답에서 어떻게 알리는지는 확인되지 않아(probe가 성공 경로만 캡처)
+          화면이 감지할 수 없다. 감지 못 하는 것을 미리 말해 두는 것이 최선이다 —
+          반복 실패하는 사용자에게 "또 시도하세요"만 반복하면 막다른 길이 된다.
+        */}
+        <p className="text-xs leading-relaxed text-slate-500">
+          여러 번 실패한다면 잠시 뒤에 시도해 주세요. 보안 확인이 반복해서 실패하면 국민건강보험공단
+          쪽에서 추가 절차를 요구할 수 있습니다.
+        </p>
+        <Button type="button" onClick={cancel}>
           폼으로 돌아가기
-        </button>
+        </Button>
       </div>
     )
   }
@@ -40,11 +57,11 @@ export function AuthWaiting() {
   return (
     <div className="space-y-4">
       <h2 tabIndex={-1} className="text-base font-semibold text-slate-900">
-        토스 앱에서 인증해 주세요
+        {authApp} 앱에서 인증해 주세요
       </h2>
 
       <p className="text-sm text-slate-600">
-        토스 앱에 인증 요청을 보냈습니다. 앱에서 인증을 마친 뒤 아래 버튼을 눌러 주세요.
+        {authApp} 앱에 인증 요청을 보냈습니다. 앱에서 인증을 마친 뒤 아래 버튼을 눌러 주세요.
       </p>
 
       <div>
@@ -76,22 +93,12 @@ export function AuthWaiting() {
       </span>
 
       <div className="space-y-2">
-        <button
-          type="button"
-          onClick={confirm}
-          disabled={isSubmitting}
-          className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white disabled:bg-slate-400"
-        >
+        <Button type="button" onClick={confirm} isLoading={isSubmitting}>
           {isSubmitting ? '결과를 불러오는 중…' : '인증을 완료했습니다'}
-        </button>
-        <button
-          type="button"
-          onClick={cancel}
-          disabled={isSubmitting}
-          className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700"
-        >
+        </Button>
+        <Button type="button" variant="ghost" onClick={cancel} disabled={isSubmitting}>
           취소
-        </button>
+        </Button>
       </div>
     </div>
   )
