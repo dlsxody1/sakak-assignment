@@ -36,6 +36,17 @@ export function AuthWaiting() {
           {josa(totalLabel, '이', '가')} 지났습니다. 입력한 내용은 그대로 두었으니 다시 요청해
           주세요.
         </p>
+
+        {/*
+          CANDiY는 보안숫자를 AI가 자동 처리하고 **3회 실패하면 수동 입력이 필요**해진다.
+          그 상태를 응답에서 어떻게 알리는지는 확인되지 않아(probe가 성공 경로만 캡처)
+          화면이 감지할 수 없다. 감지 못 하는 것을 미리 말해 두는 것이 최선이다 —
+          반복 실패하는 사용자에게 "또 시도하세요"만 반복하면 막다른 길이 된다.
+        */}
+        <p className="text-xs leading-relaxed text-slate-500">
+          여러 번 실패한다면 잠시 뒤에 시도해 주세요. 보안 확인이 반복해서 실패하면 국민건강보험공단
+          쪽에서 추가 절차를 요구할 수 있습니다.
+        </p>
         <Button type="button" onClick={cancel}>
           폼으로 돌아가기
         </Button>
