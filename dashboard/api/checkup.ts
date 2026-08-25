@@ -11,7 +11,15 @@
  * `multiFactorInfo`)뿐이고 그건 클라이언트가 만든다 — 여기서 구분하면
  * 같은 프록시 로직이 두 벌이 된다.
  */
-const ENDPOINT = 'https://api.candiy.io/v1/nhis/checkup'
+/**
+ * `response_type=candiy`는 문서의 모든 요청에 붙어 있다.
+ *
+ * 생략해도 같은 형태로 온다 — probe가 이 파라미터 없이 받은 응답의 `.data` 키가
+ * 문서의 `candiy` 예시와 같다(`patientName` `overviewList` `referenceList`
+ * `resultList`). 즉 기본값이다. 그래도 명시하는 것은 기본값이 언젠가 바뀌면
+ * 파서가 조용히 깨지기 때문이다 — 우리가 아는 형태를 요청에 적어 둔다.
+ */
+const ENDPOINT = 'https://api.candiy.io/v1/nhis/checkup?response_type=candiy'
 
 /** 1차·2차 모두에 있어야 하는 필드. 없으면 CANDiY까지 가지 않는다. */
 const REQUIRED = ['id', 'legalName', 'birthdate', 'phoneNo', 'telecom']
