@@ -7,7 +7,7 @@ export type InquiryErrors = Partial<Record<keyof InquiryInput, string>>
  * 제출 전 검증.
  *
  * 형식만 본다 — 실명·번호가 실제로 존재하는지는 CANDiY만 안다.
- * 형식 오류를 미리 걸러야 4분 30초를 헛되이 쓰지 않는다.
+ * 형식 오류를 미리 걸러야 인증 제한 시간을 헛되이 쓰지 않는다.
  */
 export function validateInquiry(input: InquiryInput): InquiryErrors {
   const errors: InquiryErrors = {}

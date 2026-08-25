@@ -62,6 +62,8 @@ export function useAuthWaiting() {
   return {
     remaining,
     total: AUTH_WINDOW_MS,
+    // 제한 시간을 문장에 박지 않고 상수에서 만든다 — 상수만 바뀌면 화면이 거짓말한다.
+    totalLabel: formatRemaining(AUTH_WINDOW_MS),
     label: formatRemaining(remaining),
     // 고른 인증 수단의 이름. 화면이 "카카오톡 앱에서 인증해 주세요"라고 말해야
     // 사용자가 어느 앱을 열지 다시 생각하지 않는다.

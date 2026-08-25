@@ -50,7 +50,7 @@ echo "HTTP $CODE"; jq . <<<"$BODY" || echo "$BODY"
 MFI=$(jq -c '.data' <<<"$BODY")
 
 echo
-echo "📱 토스 앱에서 인증 완료하고 엔터 (제한 4분 30초)"
+echo "📱 토스 앱에서 인증 완료하고 엔터 (제한 5분)"
 read -r
 
 echo "── 2차 요청 ───────────────────────────────────"

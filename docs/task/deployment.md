@@ -52,6 +52,6 @@ TanStack Router가 클라이언트 라우팅이라 이 rewrite가 없으면 `/` 
 | `/api/checkup`이 `index.html`이 아니라 JSON | `{"status":"error","code":"NO_API_KEY"}` → 키 설정 후 정상 |
 | 프록시가 CANDiY까지 실제로 도달 | 1차 요청에 `status:"success"` + `transactionId` 수신 |
 | 번들에 키 없음 | `dist/assets/*.js` grep 0건, 배포본도 0건 |
-| 인증 대기 화면 | 실 응답으로 4분 30초 카운트다운 동작 |
+| 인증 대기 화면 | 실 응답으로 5분 카운트다운 동작 |
 
 **남은 것**: 실제 토스 인증 1회 통과 (본인 실명·생년월일·휴대폰이 필요해 미검증).

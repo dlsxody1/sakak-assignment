@@ -2,8 +2,17 @@ import { create } from 'zustand'
 
 import type { InquiryStage } from './types'
 
-/** CANDiY 인증 제한. 넘기면 1차부터 다시다. */
-export const AUTH_WINDOW_MS = 270_000
+/**
+ * CANDiY 인증 제한. 넘기면 1차부터 다시다.
+ *
+ * NHIS `checkup`의 문서상 제한은 **300초**다. 270초는 HIRA(`medical_record`)의
+ * 간편인증 제한이라 이 엔드포인트의 값이 아니다 — probe 주석의 "4분 30초"를
+ * 따라가다 30초를 실제보다 짧게 잡고 있었다.
+ *
+ * 화면 문구는 이 값에서 `formatRemaining`으로 만든다. 숫자를 문장에 박아 두면
+ * 여기만 고쳤을 때 화면이 다른 시간을 말한다.
+ */
+export const AUTH_WINDOW_MS = 300_000
 
 interface InquiryState {
   stage: InquiryStage

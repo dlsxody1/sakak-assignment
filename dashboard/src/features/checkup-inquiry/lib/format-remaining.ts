@@ -16,7 +16,7 @@ export function formatRemaining(ms: number): string {
 /**
  * 스크린리더에 읽어줄 시각인지 판단한다.
  *
- * 매초 낭독하면 4분 30초 동안 270번 말하고 그 사이 다른 건 아무것도 못 듣는다.
+ * 매초 낭독하면 제한 시간 내내 매초 말하고 그 사이 다른 건 아무것도 못 듣는다.
  * 30초 간격으로만 읽되, 마지막 1분은 급한 게 실제 정보라 10초 간격으로 좁힌다.
  */
 export function isAnnounceTick(ms: number): boolean {
