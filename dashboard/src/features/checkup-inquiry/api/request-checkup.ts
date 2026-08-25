@@ -1,5 +1,7 @@
 import type { CheckupResponse } from '@/entities/checkup'
 
+import { NETWORK_MESSAGE, messageForStatus } from '../lib/error-message'
+
 /**
  * 검진 조회 요청.
  *
@@ -13,11 +15,18 @@ const PROXY = '/api/checkup'
 export class ApiKeyMissingError extends Error {}
 
 async function post(body: object): Promise<CheckupResponse> {
-  const response = await fetch(PROXY, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
+  let response: Response
+  try {
+    response = await fetch(PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  } catch {
+    // `fetch`는 상태코드가 아니라 **연결 자체**가 실패했을 때만 reject한다
+    // (오프라인·DNS·중단). 응답이 없으니 상태코드로 분기할 수 없다.
+    throw new Error(NETWORK_MESSAGE)
+  }
 
   const payload = await response.json().catch(() => null)
 
@@ -26,9 +35,12 @@ async function post(body: object): Promise<CheckupResponse> {
   }
 
   if (!response.ok || payload?.status !== 'success') {
-    // API 원문 메시지를 그대로 노출하지 않는다 (카피 규칙).
-    // 원인별 분기는 실패 응답 형태를 확인한 뒤에 한다.
-    throw new Error('검진 결과를 불러오지 못했습니다.')
+    // API 원문 메시지를 그대로 노출하지 않는다(카피 규칙). 대신 상태코드로
+    // 갈라 **다음에 뭘 할지**를 말한다 — 재시도할 일과 입력을 고칠 일이 다르다.
+    //
+    // 상태가 200인데 `status !== 'success'`인 경우가 있다. 그때는 상태코드가
+    // 원인을 말해주지 않으므로 200을 그대로 넘겨 기본 문장을 받는다.
+    throw new Error(messageForStatus(response.status))
   }
 
   return payload as CheckupResponse
