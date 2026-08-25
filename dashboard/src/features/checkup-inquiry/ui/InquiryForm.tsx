@@ -177,7 +177,7 @@ export function InquiryForm() {
         </p>
       </fieldset>
 
-      <Button type="submit" disabled={isSubmitting}>
+      <Button type="submit" isLoading={isSubmitting}>
         {isSubmitting ? '인증 요청 중…' : '인증 요청'}
       </Button>
 

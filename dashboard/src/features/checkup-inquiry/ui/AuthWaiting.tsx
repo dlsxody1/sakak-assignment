@@ -82,7 +82,7 @@ export function AuthWaiting() {
       </span>
 
       <div className="space-y-2">
-        <Button type="button" onClick={confirm} disabled={isSubmitting}>
+        <Button type="button" onClick={confirm} isLoading={isSubmitting}>
           {isSubmitting ? '결과를 불러오는 중…' : '인증을 완료했습니다'}
         </Button>
         <Button type="button" variant="ghost" onClick={cancel} disabled={isSubmitting}>
